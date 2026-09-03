@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f4f4f9">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Hide messagel</title>
+<style>
+* { box-sizing: border-box; }
+
+html {
+  min-height: 100%;
+  background: #f4f4f9;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  padding:
+    calc(40px + env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-right))
+    calc(40px + env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
+  line-height: 1.6;
+  background: #f4f4f9;
+}
+
+.container {
+  width: min(600px, 100%);
+  margin: 0 auto;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+textarea {
+  width: 100%;
+  height: 100px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font: inherit;
+}
+
+button {
+  background: #5c67f2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover { background: #4a54e1; }
+
+.output-box {
+  background: #eef;
+  padding: 15px;
+  border-left: 5px solid #5c67f2;
+  margin-top: 20px;
+  border-radius: 8px;
+  word-wrap: break-word;
+}
+
+label { font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2>Secret Text Hider</h2>
+
+<label>1. Visible Phrase (The "Cover"):</label>
+<textarea id="publicText" placeholder="e.g. This looks normal"></textarea>
+
+<label>2. Secret Message (The "Hidden"):</label>
+<textarea id="secretText" placeholder="e.g. Meet me at 9"></textarea>
+
+<button onclick="hideMessage()">Hide Message</button>
+
+<div class="output-box" id="outputSection" style="display:none;">
+<strong>Your Encoded Phrase (Copy this):</strong>
+<p id="encodedResult"></p>
+<button onclick="copyText()">Copy to Clipboard</button>
+</div>
+
+<hr style="margin: 30px 0;">
+
+<h2>Secret Text Revealer</h2>
+<label>Paste the encoded phrase here:</label>
+<textarea id="decodeInput" placeholder="Paste the text you received here..."></textarea>
+<button onclick="revealMessage()">Reveal Secret</button>
+
+<div class="output-box" id="revealSection" style="display:none;">
+<strong>Hidden Message Found:</strong>
+<p id="decodedResult" style="color: #d9534f; font-weight: bold;"></p>
+</div>
+</div>
+
+<script>
+const ZW_ZERO = '\u200b'; // Represents binary 0
+const ZW_ONE = '\u200c'; // Represents binary 1
+
+function hideMessage() {
+const publicT = document.getElementById('publicText').value;
+const secretT = document.getElementById('secretText').value;
+
+// Convert secret to binary
+let binary = "";
+for (let i = 0; i < secretT.length; i++) {
+binary += secretT[i].charCodeAt(0).toString(2).padStart(8, '0');
+}
+
+// Convert binary to invisible chars
+let invisible = "";
+for (let bit of binary) {
+invisible += (bit === '0') ? ZW_ZERO : ZW_ONE;
+}
+
+document.getElementById('encodedResult').innerText = publicT + invisible;
+document.getElementById('outputSection').style.display = 'block';
+}
+
+function revealMessage() {
+const input = document.getElementById('decodeInput').value;
+let binary = "";
+
+for (let char of input) {
+if (char === ZW_ZERO) binary += "0";
+else if (char === ZW_ONE) binary += "1";
+}
+
+let secret = "";
+for (let i = 0; i < binary.length; i += 8) {
+let byte = binary.slice(i, i + 8);
+secret += String.fromCharCode(parseInt(byte, 2));
+}
+
+document.getElementById('decodedResult').innerText = secret || "[No hidden message found]";
+document.getElementById('revealSection').style.display = 'block';
+}
+
+function copyText() {
+const text = document.getElementById('encodedResult').innerText;
+navigator.clipboard.writeText(text);
+alert("Copied! If you paste this, it will look like the visible phrase only.");
+}
+</script>
+
+</body>
+</html>
